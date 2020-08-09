@@ -106,6 +106,8 @@ Sapphire::Entity::Player::Player() :
 
   m_objSpawnIndexAllocator.init( MAX_DISPLAYED_EOBJS );
   m_actorSpawnIndexAllocator.init( MAX_DISPLAYED_ACTORS, true );
+
+  gaugeClear();
 }
 
 Sapphire::Entity::Player::~Player()
@@ -866,6 +868,9 @@ void Sapphire::Entity::Player::setClassJob( Common::ClassJob classJob )
   sendToInRangeSet( makeActorControl( getId(), ClassJobChange, 0x04 ), true );
 
   sendStatusUpdate();
+
+  gaugeClear();
+  sendActorGauge();
 }
 
 void Sapphire::Entity::Player::setLevel( uint8_t level )
@@ -1325,6 +1330,7 @@ void Sapphire::Entity::Player::performZoning( uint16_t zoneId, const Common::FFX
   m_bMarkedForZoning = true;
   setRot( rotation );
   setZone( zoneId );
+  clearBuyBackMap();
 }
 
 bool Sapphire::Entity::Player::isMarkedForZoning() const
@@ -1558,11 +1564,14 @@ void Sapphire::Entity::Player::dismount()
 
 void Sapphire::Entity::Player::spawnCompanion( uint16_t id )
 {
-  auto& exdData = Common::Service< Data::ExdDataGenerated >::ref();
+  if( id > 0 )
+  {
+    auto& exdData = Common::Service< Data::ExdDataGenerated >::ref();
 
-  auto companion = exdData.get< Data::Companion >( id );
-  if( !id )
-    return;
+    auto companion = exdData.get< Data::Companion >( id );
+    if( !companion )
+      return;
+  }
 
   m_companionId = id;
   sendToInRangeSet( makeActorControl( getId(), ActorControlType::ToggleCompanion, id ), true );
@@ -1979,7 +1988,7 @@ void Sapphire::Entity::Player::dyeItemFromDyeingInfo()
   // TODO: subtract/remove dye used
 
   insertInventoryItem( static_cast< Sapphire::Common::InventoryType >( itemToDyeContainer ), static_cast< uint16_t >( itemToDyeSlot ), itemToDye );
-  writeItem( itemToDye );
+  updateItemDb( itemToDye );
 }
 
 void Sapphire::Entity::Player::resetObjSpawnIndex()
@@ -2235,4 +2244,47 @@ bool Sapphire::Entity::Player::checkAction()
   }
 
   return true;
+}
+
+std::vector< Sapphire::Entity::ShopBuyBackEntry >& Sapphire::Entity::Player::getBuyBackListForShop( uint32_t shopId )
+{
+  return m_shopBuyBackMap[ shopId ];
+}
+
+void Sapphire::Entity::Player::addBuyBackItemForShop( uint32_t shopId, const Sapphire::Entity::ShopBuyBackEntry& entry )
+{
+  auto& list = m_shopBuyBackMap[ shopId ];
+  list.insert( list.begin(), entry );
+}
+
+void Sapphire::Entity::Player::clearBuyBackMap()
+{
+  for( auto& list : m_shopBuyBackMap )
+  {
+    for( auto& entry : list.second )
+    {
+      deleteItemDb( entry.item );
+    }
+  }
+  m_shopBuyBackMap.clear();
+}
+
+void Sapphire::Entity::Player::gaugeClear()
+{
+  std::memset( &m_gauge, 0, sizeof( m_gauge ) );
+}
+
+void Sapphire::Entity::Player::sendActorGauge()
+{
+  auto pPacket = makeZonePacket< FFXIVIpcActorGauge >( getId() );
+  pPacket->data().classJobId = static_cast< uint8_t >( getClass() );
+  std::memcpy( pPacket->data().data, &m_gauge, 15 );
+
+  queuePacket( pPacket );
+}
+
+void Sapphire::Entity::Player::gaugeSetRaw( uint8_t* pData )
+{
+  std::memcpy( &m_gauge, pData, 15 );
+  sendActorGauge();
 }

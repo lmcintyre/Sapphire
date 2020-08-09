@@ -155,6 +155,8 @@ namespace Sapphire::Network
 
     DECLARE_HANDLER( cfDutyAccepted );
 
+    DECLARE_HANDLER( cfCancel );
+
     DECLARE_HANDLER( actionHandler );
 
     DECLARE_HANDLER( placedActionHandler );
@@ -184,6 +186,8 @@ namespace Sapphire::Network
     DECLARE_HANDLER( marketBoardRequestItemInfo );
 
     DECLARE_HANDLER( marketBoardRequestItemListings );
+
+    DECLARE_HANDLER( worldInteractionhandler );
 
   };
 

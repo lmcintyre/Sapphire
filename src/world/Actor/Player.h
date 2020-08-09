@@ -33,6 +33,13 @@ namespace Sapphire::Entity
     }
   };
 
+  struct ShopBuyBackEntry
+  {
+    ItemPtr item;
+    uint32_t amount;
+    uint32_t pricePerItem;
+  };
+
   /** Class representing the Player
   *  Inheriting from Actor
   *
@@ -353,7 +360,7 @@ namespace Sapphire::Entity
     uint32_t getModelForSlot( Common::GearModelSlot slot );
 
     /*! add amount to the currency of type */
-    void addCurrency( Common::CurrencyType type, uint32_t amount );
+    void addCurrency( Common::CurrencyType type, uint32_t amount, bool sendLootMessage = false );
 
     /*! remove amount from the currency of type */
     void removeCurrency( Common::CurrencyType type, uint32_t amount );
@@ -913,15 +920,14 @@ namespace Sapphire::Entity
     using InvSlotPair = std::pair< uint16_t, int8_t >;
     using InvSlotPairVec = std::vector< InvSlotPair >;
 
-    ItemPtr createItem( uint32_t catalogId, uint32_t quantity = 1 );
-
     bool loadInventory();
 
     InvSlotPairVec getSlotsOfItemsInInventory( uint32_t catalogId );
 
     InvSlotPair getFreeBagSlot();
 
-    Sapphire::ItemPtr addItem( uint32_t catalogId, uint32_t quantity = 1, bool isHq = false, bool slient = false, bool canMerge = true );
+    ItemPtr addItem( uint32_t catalogId, uint32_t quantity = 1, bool isHq = false, bool silent = false, bool canMerge = true, bool sendLootMessage = false );
+    ItemPtr addItem( ItemPtr itemToAdd, bool silent = false, bool canMerge = true, bool sendLootMessage = false );
 
     void moveItem( uint16_t fromInventoryId, uint8_t fromSlotId, uint16_t toInventoryId, uint8_t toSlot );
 
@@ -948,7 +954,11 @@ namespace Sapphire::Entity
 
     void writeInventory( Common::InventoryType type );
 
-    void writeItem( ItemPtr pItem ) const;
+    ItemPtr createTempItem( uint32_t catalogId, uint32_t quantity = 1 );
+
+    void updateItemDb( ItemPtr pItem ) const;
+
+    void writeItemDb( ItemPtr pItem ) const;
 
     void deleteItemDb( ItemPtr pItem ) const;
 
@@ -956,7 +966,7 @@ namespace Sapphire::Entity
     uint32_t getCrystal( Common::CrystalType type );
 
     /*! add amount to the crystal of type */
-    void addCrystal( Common::CrystalType type, uint32_t amount );
+    void addCrystal( Common::CrystalType type, uint32_t amount, bool sendLootMessage = false );
 
     /*! remove amount from the crystals of type */
     void removeCrystal( Common::CrystalType type, uint32_t amount );
@@ -972,7 +982,13 @@ namespace Sapphire::Entity
     void setActiveLand( uint8_t land, uint8_t ward );
     Common::ActiveLand getActiveLand() const;
 
-    Sapphire::ItemPtr dropInventoryItem( Common::InventoryType type, uint16_t slotId );
+    Sapphire::ItemPtr dropInventoryItem( Common::InventoryType type, uint16_t slotId, bool silent = false );
+
+    // Job UI
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    void gaugeClear();
+    void sendActorGauge();
+    void gaugeSetRaw( uint8_t* pData );
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -989,6 +1005,10 @@ namespace Sapphire::Entity
     uint64_t m_lastMoveTime;
     uint8_t m_lastMoveflag;
     bool m_falling;
+
+    std::vector< ShopBuyBackEntry >& getBuyBackListForShop( uint32_t shopId );
+    void addBuyBackItemForShop( uint32_t shopId, const ShopBuyBackEntry& entry );
+    void clearBuyBackMap();
 
   private:
     uint32_t m_lastWrite;
@@ -1052,7 +1072,7 @@ namespace Sapphire::Entity
     uint8_t m_homePoint;
     uint8_t m_startTown;
     uint16_t m_townWarpFstFlags;
-    uint8_t m_questCompleteFlags[476];
+    uint8_t m_questCompleteFlags[487];
     uint8_t m_discovery[445];
     uint32_t m_playTime;
 
@@ -1085,6 +1105,8 @@ namespace Sapphire::Entity
     bool m_bInCombat;
     bool m_bLoadingComplete;
     bool m_bAutoattack;
+
+    Common::JobGauge m_gauge;
 
     Common::ZoneingType m_zoningType;
     uint32_t m_territoryId;
@@ -1129,7 +1151,7 @@ namespace Sapphire::Entity
     Common::Util::SpawnIndexAllocator< uint8_t > m_actorSpawnIndexAllocator;
 
     std::array< Common::HuntingLogEntry, 12 > m_huntingLogEntries;
-
+    std::unordered_map< uint32_t, std::vector< ShopBuyBackEntry > > m_shopBuyBackMap;
   };
 
 }

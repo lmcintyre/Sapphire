@@ -1015,7 +1015,7 @@ Sapphire::Entity::Player::sendQuestMessage( uint32_t questId, int8_t msgId, uint
 
 void Sapphire::Entity::Player::updateQuestsCompleted( uint32_t questId )
 {
-  uint8_t index = questId / 8;
+  uint16_t index = questId / 8;
   uint8_t bitIndex = ( questId ) % 8;
 
   uint8_t value = 0x80 >> bitIndex;
@@ -1025,7 +1025,7 @@ void Sapphire::Entity::Player::updateQuestsCompleted( uint32_t questId )
 
 void Sapphire::Entity::Player::removeQuestsCompleted( uint32_t questId )
 {
-  uint8_t index = questId / 8;
+  uint16_t index = questId / 8;
   uint8_t bitIndex = ( questId ) % 8;
 
   uint8_t value = 0x80 >> bitIndex;
@@ -1065,7 +1065,11 @@ bool Sapphire::Entity::Player::giveQuestRewards( uint32_t questId, uint32_t opti
   {
     for( uint32_t i = 0; i < rewardItemCount; i++ )
     {
-      addItem( questInfo->itemReward0.at( i ), questInfo->itemCountReward0.at( i ) );
+      auto itemId = questInfo->itemReward0.at( i );
+      if( itemId > 0 )
+      {
+        addItem( itemId, questInfo->itemCountReward0.at( i ), false, false, true, true );
+      }
     }
   }
 
@@ -1074,16 +1078,16 @@ bool Sapphire::Entity::Player::giveQuestRewards( uint32_t questId, uint32_t opti
     for( uint32_t i = 0; i < optionalItemCount; i++ )
     {
       auto itemId = questInfo->itemReward1.at( i );
-      if( itemId == optionalChoice )
+      if( itemId > 0 && itemId == optionalChoice )
       {
-        addItem( itemId, questInfo->itemCountReward1.at( i ) );
+        addItem( itemId, questInfo->itemCountReward1.at( i ), false, false, true, true );
         break;
       }
     }
   }
 
   if( gilReward > 0 )
-    addCurrency( CurrencyType::Gil, gilReward );
+    addCurrency( CurrencyType::Gil, gilReward, true );
 
   return true;
 }

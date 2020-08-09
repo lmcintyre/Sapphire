@@ -1021,8 +1021,9 @@ namespace Sapphire::Network::Packets::Server
     unsigned char companionDefRank;
     unsigned char companionAttRank;
     unsigned char companionHealRank;
-    unsigned char u19[9];
+    unsigned char u19[8];
     unsigned char mountGuideMask[22];
+    unsigned char u19_2;
     char name[32];
     unsigned char unknownOword[16];
     unsigned char unknownOw;
@@ -1410,7 +1411,8 @@ namespace Sapphire::Network::Packets::Server
     uint16_t scene;
     uint16_t padding;
     uint32_t sceneFlags;
-    uint8_t paramCount;
+    uint32_t unknown;
+    uint8_t paramSize;
     uint8_t padding2[3];
     uint32_t params[ArgCount];
   };
@@ -1498,8 +1500,8 @@ namespace Sapphire::Network::Packets::Server
   */
   struct FFXIVIpcQuestCompleteList : FFXIVIpcBasePacket< QuestCompleteList >
   {
-    uint8_t questCompleteMask[480];
-    uint8_t unknownCompleteMask[80];
+    uint8_t questCompleteMask[487];
+    uint8_t unknownCompleteMask[73];
   };
 
   /**
@@ -1677,6 +1679,34 @@ namespace Sapphire::Network::Packets::Server
   struct FFXIVIpcEquipDisplayFlags : FFXIVIpcBasePacket< EquipDisplayFlags >
   {
     uint8_t bitmask;
+  };
+
+  /**
+   * Structural representation of the packet sent by the server
+   * to place/remove field marker presets
+   */
+  struct FFXIVIpcPlaceFieldMarkerPreset : FFXIVIpcBasePacket< PlaceFieldMarkerPreset >
+  {
+    /*! which fieldmarks to show */
+    Common::FieldMarkerStatus status;
+    /*! A coordinates would be (float)Xints[0]/1000.0, (float)Yints[0]/1000.0, (float)Zints[0]/1000.0 */
+    uint32_t Xints[8];
+    uint32_t Yints[8];
+    uint32_t Zints[8];
+  };
+
+  /**
+   * Structural representation of the packet sent by the server
+   * to place/remove a field marker
+   */
+  struct FFXIVIpcPlaceFieldMarker : FFXIVIpcBasePacket< PlaceFieldMarker >
+  {
+    Common::FieldMarkerId markerId;
+    uint8_t status;
+    uint8_t pad[2];
+    uint32_t Xint;
+    uint32_t Yint;
+    uint32_t Zint;
   };
 
   /**
@@ -1991,11 +2021,61 @@ namespace Sapphire::Network::Packets::Server
 
     char otherName[32];
   };
+  
+  struct FFXIVIpcRetainerInformation : FFXIVIpcBasePacket< RetainerInformation >
+  {
+    uint8_t unknown0[8];
+    uint64_t retainerId;
+    uint8_t hireOrder;
+    uint8_t itemCount;
+    uint8_t unknown5[2];
+    uint32_t gil;
+    uint8_t sellingCount;
+    uint8_t cityId;
+    uint8_t classJob;
+    uint8_t level;
+    uint8_t unknown11[4];
+    uint32_t retainerTask;
+    uint32_t retainerTaskComplete;
+    uint8_t unknown14;
+    char retainerName[20];
+  };
 
   struct FFXIVIpcCharaVisualEffect : FFXIVIpcBasePacket< CharaVisualEffect >
   {
     uint32_t id;
     uint32_t padding;
+  };
+
+  struct FFXIVIpcCFCancel : FFXIVIpcBasePacket< CFCancel >
+  {
+    uint32_t cancelReason;
+    uint32_t unknown2;
+  };
+
+  struct FFXIVIpcShopMessage : FFXIVIpcBasePacket< ShopMessage >
+  {
+    uint32_t shopId;
+    uint32_t msgType;
+    uint32_t unknown2;
+    uint32_t itemId;
+    uint32_t amount;
+    uint32_t price;
+    uint32_t unknown6;
+    uint32_t unknown7;
+  };
+
+  struct FFXIVIpcLootMessage : FFXIVIpcBasePacket< LootMessage >
+  {
+    Common::LootMessageType msgType;
+    uint8_t padding[3];
+    uint32_t param1;
+    uint32_t param2;
+    uint32_t param3;
+    uint32_t param4;
+    uint32_t param5;
+    uint32_t param6;
+    uint32_t param7;
   };
 
 }

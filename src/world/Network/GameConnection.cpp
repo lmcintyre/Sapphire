@@ -103,6 +103,7 @@ Sapphire::Network::GameConnection::GameConnection( Sapphire::Network::HivePtr pH
   setZoneHandler( ClientZoneIpcType::ReturnEventHandler, "EventHandlerReturn", &GameConnection::eventHandlerReturn );
   setZoneHandler( ClientZoneIpcType::TradeReturnEventHandler, "EventHandlerReturn",
                   &GameConnection::eventHandlerReturn );
+  setZoneHandler( ClientZoneIpcType::TradeMultipleReturnEventHander, "EventHandlerReturn", &GameConnection::eventHandlerReturn );
 
   setZoneHandler( ClientZoneIpcType::ShopEventHandler, "ShopEventHandler",
                   &GameConnection::eventHandlerShop );
@@ -117,6 +118,7 @@ Sapphire::Network::GameConnection::GameConnection( Sapphire::Network::HivePtr pH
   setZoneHandler( ClientZoneIpcType::CFRegisterDuty, "CFRegisterDuty", &GameConnection::cfRegisterDuty );
   setZoneHandler( ClientZoneIpcType::CFRegisterRoulette, "CFRegisterRoulette", &GameConnection::cfRegisterRoulette );
   setZoneHandler( ClientZoneIpcType::CFCommenceHandler, "CFDutyAccepted", &GameConnection::cfDutyAccepted );
+  setZoneHandler( ClientZoneIpcType::CFCancelHandler, "CFCancel", &GameConnection::cfCancel );
 
   setZoneHandler( ClientZoneIpcType::ReqEquipDisplayFlagsChange, "ReqEquipDisplayFlagsChange",
                   &GameConnection::reqEquipDisplayFlagsHandler );
@@ -128,6 +130,8 @@ Sapphire::Network::GameConnection::GameConnection( Sapphire::Network::HivePtr pH
                   &GameConnection::marketBoardRequestItemInfo );
   setZoneHandler( ClientZoneIpcType::MarketBoardRequestItemListings, "MarketBoardRequestItemListings",
                   &GameConnection::marketBoardRequestItemListings );
+
+  setZoneHandler( ClientZoneIpcType::WorldInteractionHandler, "WorldInteractionHandler", &GameConnection::worldInteractionhandler );
 
   setChatHandler( ClientChatIpcType::TellReq, "TellReq", &GameConnection::tellHandler );
 

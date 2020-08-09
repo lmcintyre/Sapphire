@@ -51,11 +51,11 @@ namespace Sapphire::Common
 
   enum InventoryOperation : uint16_t
   {
-    Discard = 0x06E,
-    Move = 0x006F,
-    Swap = 0x0070,
-    Split = 0x0071,
-    Merge = 0x0073,
+    Discard = 0x0180,
+    Move = 0x0181,
+    Swap = 0x0182,
+    Split = 0x0183,
+    Merge = 0x0185,
   };
 
   enum ClientLanguage : uint8_t
@@ -159,44 +159,46 @@ namespace Sapphire::Common
     ModelRing2 = 9
   };
 
-  enum EquipSlotCategory : uint8_t
+  enum class EquipSlotCategory : uint8_t
   {
-    Unequippable = 0,
-
     // main slots
 
-    CharaMainHand = 1,
-    CharaOffHand = 2,
-    CharaHead = 3,
-    CharaBody = 4,
-    CharaHands = 5,
-    CharaWaist = 6,
-    CharaLegs = 7,
-    CharaFeet = 8,
-    CharaEars = 9,
-    CharaNeck = 10,
-    CharaWrist = 11,
-    CharaRing = 12,
-    CharaSoulCrystal = 17,
+    CharaMainHand = 0,
+    CharaOffHand = 1,
+    CharaHead = 2,
+    CharaBody = 3,
+    CharaHands = 4,
+    CharaWaist = 5,
+    CharaLegs = 6,
+    CharaFeet = 7,
+    CharaEars = 8,
+    CharaNeck = 9,
+    CharaWrist = 10,
+    CharaRing = 11,
+    CharaSoulCrystal = 12,
 
-    // specials
-
+    /* following slots not seem to exist any more.
+       when multi-slot gear is moved into equipment slot, normal slot listed above is used.
+       client will move any incompatible gears into armory but no InventoryModifiyHandler is sent.
+       server need to move those silently in order to sync with client.
+    */
+    
     /*! Cannot equip gear to offhand slot */
-      MainTwoHandedWeapon = 13,
+      //MainTwoHandedWeapon = 13,
     /*! Can be equipped in either main or offhand slot */
-      MainOrOffHand = 14, // unused
+      //MainOrOffHand = 14, // unused
     /*! Cannot equip gear to head */
-      BodyDisallowHead = 15,
+      //BodyDisallowHead = 15,
     /*! Cannot equip gear to hands, legs and feet slots */
-      BodyDisallowHandsLegsFeet = 16,
+      //BodyDisallowHandsLegsFeet = 16,
     /*! Cannot equip gear to feet slot */
-      LegsDisallowFeet = 18,
+      //LegsDisallowFeet = 18,
     /*! Cannot equp gear to head, hands, legs, feet slots */
-      BodyDisallowAll = 19,
+      //BodyDisallowAll = 19,
     /*! Cannot equip gear to hands slot */
-      BodyDisallowHands = 20,
+      //BodyDisallowHands = 20,
     /*! Cannot equip gear to legs & feet slots */
-      BodyDisallowLegsFeet = 21,
+      //BodyDisallowLegsFeet = 21,
   };
 
   enum InventoryType : uint16_t
@@ -226,8 +228,8 @@ namespace Sapphire::Common
     ArmoryWaist = 3204,
     ArmoryLegs = 3205,
     ArmoryFeet = 3206,
-    ArmoryNeck = 3207,
-    ArmoryEar = 3208,
+    ArmoryEar = 3207,
+    ArmoryNeck = 3208,
     ArmoryWrist = 3209,
     ArmoryRing = 3300,
 
@@ -564,6 +566,30 @@ namespace Sapphire::Common
 
   };
 
+  enum FieldMarkerStatus : uint32_t
+  {
+    A = 0x1,
+    B = 0x2,
+    C = 0x4,
+    D = 0x8,
+    One = 0x10,
+    Two = 0x20,
+    Three = 0x40,
+    Four = 0x80
+  };
+  // TODO: consolidate these two into one since FieldMarkerStatus == 1 << FieldMarkerId?
+  enum class FieldMarkerId : uint8_t
+  {
+    A,
+    B,
+    C,
+    D,
+    One,
+    Two,
+    Three,
+    Four
+  };
+
   enum struct ActionAspect : uint8_t
   {
     None = 0,   // Doesn't imply unaspected
@@ -583,13 +609,19 @@ namespace Sapphire::Common
     TacticsPoints = 5,
     StatusEffect = 10,
     WARGauge = 22,
-//    DRKGauge = 25,
-//    AetherflowStack = 30,
-//    Status = 32,
+    DRKGauge = 25,
+    //    AetherflowStack = 30,
+    //    Status = 32,
+    SAMKenki = 39,
+    SAMSen = 40,
     PLDGauge = 41,
-//    RDMGaugeBoth = 74,
-////  RDMGaugeBlack = 75, // not right?
-//    DRGGauge3Eyes = 76,
+    GNBAmmo = 55,
+    WHMBloodLily = 56,
+    WHMLily = 57,
+    SAMMeditation = 63,
+    //    RDMGaugeBoth = 74,
+    ////  RDMGaugeBlack = 75, // not right?
+    //    DRGGauge3Eyes = 76,
   };
 
   enum class AttackType : int8_t
@@ -654,6 +686,7 @@ namespace Sapphire::Common
   {
     None = 0,
     Absorbed = 0x04,
+    ExtendedValue = 0x40,
     EffectOnSource = 0x80,
     Reflected = 0xA0,
   };
@@ -682,7 +715,7 @@ namespace Sapphire::Common
      * Has no effect on what is shown and stored in value
      */
     uint8_t param2;
-    uint8_t valueMultiplier;      // This multiplies whatever value is in the 'value' param by 10. Possibly a workaround for big numbers
+    uint8_t extendedValueHighestByte;
     uint8_t flags;
     int16_t value;
   };
@@ -1025,6 +1058,210 @@ namespace Sapphire::Common
     Melee,
     Crafter,
     Gatherer
+  };
+
+  enum class AstCardType : uint8_t
+  {
+    None = 0,
+    Balance = 1,
+    Bole = 2,
+    Arrow = 3,
+    Spear = 4,
+    Ewer = 5,
+    Spire = 6,
+    Lord = 0x70,
+    Lady = 0x80,
+  };
+
+  enum class AstSealType : uint8_t
+  {
+    None = 0,
+    Sun = 1,
+    Moon = 2,
+    Celestrial = 3,
+  };
+
+  enum class DrgState : uint8_t
+  {
+    None = 0,
+    BloodOfTheDragon = 1,
+    LifeOfTheDragon = 2,
+  };
+
+  enum class SamSen : uint8_t
+  {
+    None = 0,
+    Setsu = 1,
+    Getsu = 2,
+    Ka = 4,
+  };
+
+  enum class SchDismissedFairy : uint8_t
+  {
+    None = 0,
+    Eos = 6,
+    Selene = 7,
+  };
+
+  enum class SmnPet : uint8_t
+  {
+    None = 0,
+    Ifrit = 3,
+    Titan = 4,
+    Garuda = 5,
+  };
+
+  enum class SmnPetGlam : uint8_t
+  {
+    None = 0,
+    Emerald = 1,
+    Topaz = 2,
+    Ruby = 3,
+  };
+
+  enum class BrdSong : uint8_t
+  {
+    Mage = 5,
+    Army = 0x0A,
+    Wanderer = 0x0F,
+  };
+
+  union JobGauge
+  {
+    struct
+    {
+      uint8_t gauge_data[15];
+    } _raw;
+
+    struct
+    {
+      uint32_t unused;
+      AstCardType card;
+      AstSealType seals[3];
+    } ast;
+    struct
+    {
+      uint16_t timeUntilNextPolyglot;
+      uint16_t elementTimer;
+      uint8_t elementStance;
+      uint8_t umbralhearts;
+      uint8_t polyglotStacks;
+      uint8_t enochainState;
+    } blm;
+    struct
+    {
+      uint16_t songTimer;
+      uint8_t songStacks;
+      uint8_t unused;
+      BrdSong song;
+    } brd;
+    struct
+    {
+      uint8_t feathers;
+      uint8_t esprit;
+      uint8_t stepOrder[4];
+      uint8_t completeSteps;
+    } dnc;
+    struct
+    {
+      uint16_t dragonTimer;
+      DrgState dragonState;
+      uint8_t eyes;
+    } drg;
+    struct
+    {
+      uint8_t blood;
+      uint8_t unused;
+      uint16_t darksideTimer;
+      uint8_t darkArts;
+      uint8_t unused2;
+      uint16_t shadowTimer;
+    } drk;
+    struct
+    {
+      uint8_t ammo;
+      uint8_t unused;
+      uint16_t maxTimerDuration;
+      uint8_t ammoComboStep;
+    } gnb;
+    struct
+    {
+      uint16_t overheatTimer;
+      uint16_t robotTimer;
+      uint8_t heat;
+      uint8_t battery;
+      uint8_t lastRobotBatteryPower;
+      uint8_t activeTimerFlag;
+    } mch;
+    struct
+    {
+      uint8_t greasedLightningTimer;
+      uint8_t unused;
+      uint8_t greasedLightningStacks;
+      uint8_t chakra;
+      uint8_t greasedLightningTimerFreezed;
+    } mnk;
+    struct
+    {
+      uint32_t hutonTimer;
+      uint8_t tenChiJinMudrasUsed;
+      uint8_t ninki;
+      uint8_t hutonManualCasts;
+    } nin;
+    struct
+    {
+      uint8_t oathGauge;
+    } pld;
+    struct
+    {
+      uint8_t whiteGauge;
+      uint8_t blackGauge;
+    } rdm;
+    struct
+    {
+      uint16_t unused;
+      uint8_t unused2;
+      uint8_t kenki;
+      uint8_t meditationStacks;
+      SamSen sen;
+    } sam;
+    struct
+    {
+      uint16_t unused;
+      uint8_t aetherflowStacks;
+      uint8_t fairyGauge;
+      uint16_t seraphTimer;
+      SchDismissedFairy dismissedFairy;
+    } sch;
+    struct
+    {
+      uint16_t timer;
+      SmnPet returnSummon;
+      SmnPetGlam petGlam;
+      uint8_t stacks;
+    } smn;
+
+    struct
+    {
+      uint8_t beastGauge;
+    } war;
+    struct
+    {
+      uint16_t unused;
+      uint16_t lilyTimer;
+      uint8_t lilies;
+      uint8_t bloodLilies;
+    } whm;
+  };
+
+  enum class LootMessageType : uint8_t
+  {
+    GetItem1 = 1, // p1: actorId, p4: itemId (HQ: itemId + 1,000,000 lol), p5: amount
+    GetItem2 = 3, // p1: actorId, p2: itemId, p3: amount, seems like same thing as GetItem1 but different param position.
+    FailedToGetLootNoFreeInventorySlot = 5, // p1: actorId
+    LootRolled = 7, // p1: actorId, p2: itemId, p3: amount
+    GetGil = 9, // p1: gil
+    EmptyCoffer = 11, // seems like no param
   };
 
   using PlayerStateFlagList = std::vector< PlayerStateFlag >;

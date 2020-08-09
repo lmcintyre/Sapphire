@@ -344,6 +344,17 @@ struct FFXIVIpcFreeCompanyUpdateShortMessageHandler :
   uint16_t unknown2;
 };
 
+struct FFXIVIpcWorldInteractionHandler :
+  FFXIVIpcBasePacket< WorldInteractionHandler >
+{
+  uint32_t action;
+  uint32_t param1;
+  uint32_t param2;
+  uint32_t param3;
+  uint32_t param4;
+  Common::FFXIVARR_POSITION3 position;
+};
+
 }
 
 #endif //_CORE_NETWORK_PACKETS_ZONE_CLIENT_IPC_H
